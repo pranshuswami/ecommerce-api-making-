@@ -55,7 +55,7 @@ app.post("/products",(req,res)=>{
 }),
 app.put("/products/:id",(req,res)=>{
     const{id}=req.params
-    const{product_name,price,category_id,}=req.body
+    const{product_name,price,category_id}=req.body
     const sql="UPDATE products SET product_name=?,price=?,category_id=? WHERE product_id=?"
      db.query(sql,[product_name,price,category_id,id],(err,result)=>{
         if(err){
