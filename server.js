@@ -1,26 +1,25 @@
-const express = require("express");
-const mysql = require("mysql2");
-
-const app = express();
-app.use(express.json());
-
+const express = require("express")
+const mysql = require("mysql2")
+const cors = require("cors")
+const app = express()
+app.use(express.json())
+app.use(cors())
 const db = mysql.createConnection({
     host: "localhost",
     user: "root",
     password: "",
     database: "ecommerce_db"
-});
-
+})
 db.connect((err) => {
     if (err) {
         console.log("error", err);
     } else {
         console.log("database connected successfully");
     }
-});
+})
 
 app.get("/customer-order", (req, res) => {
-    const sql = "SELECT c.customer_id,c.name,c.email,o.order_id,o.order_date,o.total_amount FROM customers c JOIN orders o ON c.customer_id=o.customer_id";
+    const sql = "SELECT c.customer_id,c.name,c.email,o.order_id,o.order_date,o.total_amount FROM customers c JOIN orders o ON c.customer_id=o.customer_id ";
 
     db.query(sql, (err, result) => {
         if (err) {
@@ -34,9 +33,9 @@ app.get("/customer-order", (req, res) => {
             status: "success",
             message: "data fetched",
             data: result
-        });
-    });
-});
+        })
+    })
+})
 
 app.get("/products", (req, res) => {
     const sql = "SELECT * FROM products";
@@ -78,9 +77,34 @@ app.post("/products", (req, res) => {
                 price,
                 category_id
             }
-        });
-    });
-});
+        })
+    })
+})
+app.post("/customers", (req, res) => {
+    const {name, email,phone } = req.body;
+
+    const sql = "INSERT INTO customers (name,email,phone) VALUES(?,?,?)";
+
+    db.query(sql, [name,email,phone], (err, result) => {
+        if (err) {
+            return res.status(500).json({
+                status: "failed",
+                message: err.message
+            });
+        }
+
+        res.status(201).json({
+            status: "success",
+            message: "product added successfully",
+            data: {
+                customer_id: result.insertId,
+                name,
+                email,
+                phone
+            }
+        })
+    })
+})
 
 app.put("/products/:id", (req, res) => {
     const { id } = req.params;
@@ -105,12 +129,13 @@ app.put("/products/:id", (req, res) => {
                 price,
                 category_id
             }
-        });
-    });
-});
+        })
+    })
+})
 
 app.delete("/products/:id", (req, res) => {
     const { id } = req.params;
+    
 
     const sql = "DELETE FROM products WHERE product_id=?";
 
@@ -132,9 +157,9 @@ app.delete("/products/:id", (req, res) => {
         res.status(200).json({
             status: "success",
             message: "product deleted successfully"
-        });
-    });
-});
+        })
+    })
+})
 
 app.get("/products/search", (req, res) => {
     const { name } = req.query;
@@ -153,9 +178,9 @@ app.get("/products/search", (req, res) => {
             status: "success",
             message: "product found",
             data: result
-        });
-    });
-});
+        })
+    })
+})
 app.get("/product-details",(req,res)=>{
     const sql="SELECT p.product_name,p.price,pd.description,pd.brand,pr.rating,pr.review FROM products p JOIN product_details pd ON p.product_id=pd.product_id JOIN product_reviews pr ON pd.product_id=pr.product_id"
     db.query(sql,(err,result)=>{
@@ -226,4 +251,4 @@ app.post("/product-info",(req,res)=>{
 })
 app.listen(5000, () => {
     console.log("server running at 5000");
-});
+})
